@@ -24,6 +24,33 @@ function setCurrentFolder(folder) {
   addFolders(getFolders());
 }
 
+function deleteItems() {
+  const checkedFolders = [];
+  document
+    .querySelectorAll(`.folder-checkbox[type="checkbox"]`)
+    .forEach((folderEl) => {
+      if (folderEl.checked) checkedFolders.push(folderEl.value);
+    });
+  if(checkedFolders.length){
+    if(checkedFolders.includes(currentFolder)) setCurrentFolder(null);
+    window.electron.sendSync("delete-folders", checkedFolders);
+    return;
+  }
+
+  
+  const checkedFiles = [];
+  document
+    .querySelectorAll(`.file-checkbox[type="checkbox"]`)
+    .forEach((folderEl) => {
+      if (folderEl.checked) checkedFiles.push(folderEl.value);
+    });
+  if(checkedFiles.length){
+    window.electron.sendSync("delete-files", checkedFiles);
+  }
+
+
+}
+
 function addFiles(csvFiles) {
   const fileListElement = document.getElementById("filelist");
   const checkeds = [];
@@ -81,15 +108,13 @@ function addFolders(folders) {
     const listItem = document.createElement("tr");
     if(currentFolder === folder)
       listItem.classList.add("tr-selected");
-    
     listItem.classList.add("tr-folder");
-    listItem.onclick = () => setCurrentFolder(folder);
     listItem.dataset.foldername = folder;
     listItem.innerHTML = `
-        <td class="icon-td">
+        <td class="icon-td" onclick="setCurrentFolder('${folder}')">
             <i class="fa-solid fa-folder"></i>
         </td>
-        <td>
+        <td onclick="setCurrentFolder('${folder}')">
             <p class="title">${folder}</p>            
         </td>
         <td class="td-actions text-right">

@@ -110,6 +110,25 @@ ipcMain.on("set-current-folder", (event, folder) => {
   event.returnValue = folder;
 });
 
+ipcMain.on("delete-folders", (event, folders) => {
+  const documentsPath = getDocumentsFolder();
+  folders.forEach(folder => {
+    fs.rmSync(path.join(documentsPath, folder), { recursive: true, force: true });
+  })
+  event.returnValue = true; 
+
+});
+
+ipcMain.on("delete-files", (event, files) => {
+  const sceneFolder = getCurrentSceneFolder();
+  files.forEach(file => {
+    fs.rmSync(path.join(sceneFolder, file), { recursive: true, force: true });
+  })
+  event.returnValue = true;
+});
+
+
+
 function getDocumentsFolder() {
   const documentsPath = app.getPath("documents");
   let folderPath = path.join(documentsPath, "facepipe");
