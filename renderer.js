@@ -1,23 +1,28 @@
-const { ipcRenderer } = require('electron').ipcRenderer;
-const path = require('path');
+const INTERVALO = 2000; //em milisegundos
 
-// Create a path relative to the root directory of your Electron application
-const relativePath = './files'; 
-const absolutePath = path.join(__dirname, relativePath); 
+setInterval(() => {
+  const csvFiles = window.electron.sendSync("get-csv-files");
+  addFiles(csvFiles ?? []);
+}, INTERVALO);
 
-
-const csvFiles = window.electron.sendSync('get-csv-files', absolutePath);
-console.log('Directory Path:', absolutePath);
-console.log("Received CSV files:", csvFiles);
-const fileListElement = document.getElementById('filelist');
-
-csvFiles.forEach(file => {
-    const listItem = document.createElement('tr');
+function addFiles(csvFiles) {
+  const fileListElement = document.getElementById("filelist");
+  const checkeds = [];
+  document.querySelectorAll(`.file-checkbox[type="checkbox"]`).forEach(fileEl => {
+    if(fileEl.checked) 
+        checkeds.push(fileEl.value);
+  })
+  fileListElement.innerHTML = ""; //Todo - limpando, por enquanto, tudo
+  csvFiles.sort((a, b) => a < b);
+  csvFiles.forEach((file) => {
+    const isChecked = checkeds.includes(file) 
+    const listItem = document.createElement("tr");
+    listItem.dataset.filename = file;
     listItem.innerHTML = `
         <td>
             <div class="form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" type="checkbox" value="">
+                    <input class="form-check-input file-checkbox" value="${file}"  type="checkbox">
                     <span class="form-check-sign">
                         <span class="check"></span>
                     </span>
@@ -35,5 +40,8 @@ csvFiles.forEach(file => {
             </button>
         </td>
     `;
+    if(isChecked)
+        listItem.querySelector(`.file-checkbox[type="checkbox"]`).checked = true;
     fileListElement.appendChild(listItem);
-});
+  });
+}

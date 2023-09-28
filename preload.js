@@ -6,6 +6,9 @@ contextBridge.exposeInMainWorld(
   }
 );
 
+// Cria pasta Facepipe e Lista os Arquivos
+// setInterval(() => window['files'] = ipcRenderer.sendSync('get-csv-files'), 1000)
+
 window.addEventListener('DOMContentLoaded', () => {
     const replaceText = (selector, text) => {
       const element = document.getElementById(selector)

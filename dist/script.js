@@ -211,7 +211,8 @@ function downloadCSV(data) {
         let link = document.createElement("a");
         let url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", "blendshapes.csv");
+        const dateIso = new Date().toISOString();
+        link.setAttribute("download", `${dateIso}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
