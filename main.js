@@ -78,6 +78,12 @@ ipcMain.on("get-folders", (event, dirPath) => {
   });
 });
 
+ipcMain.on("get-date-file", (event, fileName) => {
+  const sceneFolder = getCurrentSceneFolder();
+  const fileStat = fs.statSync(path.join(sceneFolder, fileName));
+  event.returnValue = fileStat?.mtime;
+});
+
 ipcMain.on("create-folder", (event, dirPath) => {
   const folderPath = getDocumentsFolder();
 

@@ -64,6 +64,8 @@ function addFiles(csvFiles) {
   csvFiles.forEach((file) => {
     const isChecked = checkeds.includes(file);
     const listItem = document.createElement("tr");
+    const dateFile = new Date(window.electron.sendSync("get-date-file", file));
+    const dateString = dateFile.toLocaleDateString('en-US') + " " + `${dateFile.getHours()}:${dateFile.getMinutes()}:${dateFile.getSeconds()}`;
     listItem.dataset.filename = file;
     listItem.innerHTML = `
         <td>
@@ -78,7 +80,7 @@ function addFiles(csvFiles) {
         </td>
         <td>
             <p class="title"> <i class="fa-solid fa-file"></i>${file}</p>
-            <p class="text-muted">September 20, 2023</p> 
+            <p class="text-muted">${dateString}</p> 
             <!-- You might want to adjust this hardcoded date -->
         </td>
         <td class="td-actions text-right">
