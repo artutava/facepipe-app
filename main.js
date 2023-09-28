@@ -52,6 +52,58 @@ ipcMain.on("get-csv-files", (event, dirPath) => {
   });
 });
 
+ipcMain.on("get-folders", (event, dirPath) => {
+  const folderPath = getDocumentsFolder();
+
+  fs.readdir(folderPath, (err, files) => {
+    if (err) {
+      console.error("Erro ao ler o diretório:", err);
+      event.returnValue = [];
+      return;
+    }
+
+    const folders = [];
+    files.forEach((file) => {
+      const itemPath = `${folderPath}/${file}`;
+      const isDirectory = fs.statSync(itemPath).isDirectory();
+
+      if (isDirectory) {
+        folders.push(file);
+      }
+    });
+    if(!folders.length) {
+      fs.mkdirSync(path.join(folderPath, "Cena 1"), { recursive: true })
+    }
+
+    event.returnValue = folders;
+  });
+});
+
+ipcMain.on("create-folder", (event, dirPath) => {
+  const folderPath = getDocumentsFolder();
+
+  fs.readdir(folderPath, (err, files) => {
+    if (err) {
+      console.error("Erro ao ler o diretório:", err);
+      event.returnValue = [];
+      return;
+    }
+
+    const folders = [];
+    files.forEach((file) => {
+      const itemPath = `${folderPath}/${file}`;
+      const isDirectory = fs.statSync(itemPath).isDirectory();
+
+      if (isDirectory) {
+        folders.push(file);
+      }
+    });
+    fs.mkdirSync(path.join(folderPath, `Cena ${files.length + 1}`), { recursive: true })
+
+    event.returnValue = folders;
+  });
+});
+
 
 function getDocumentsFolder() {
   const documentsPath = app.getPath("documents");
