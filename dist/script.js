@@ -92,13 +92,20 @@ let results = undefined;
 const drawingUtils = new DrawingUtils(canvasCtx);
 async function predictWebcam() {
     frameCount++;
+
     const radio = video.videoHeight / video.videoWidth;
-    video.style.width = videoWidth + "px";
-    video.style.height = videoWidth * radio + "px";
-    canvasElement.style.width = videoWidth + "px";
-    canvasElement.style.height = videoWidth * radio + "px";
-    canvasElement.width = video.videoWidth;
-    canvasElement.height = video.videoHeight;
+
+    video.style.width = "100%";  // Stretch video to 100% width
+    video.style.height = "auto"; // Let height be auto to maintain aspect ratio
+
+    canvasElement.style.width = "100%";      // Stretch canvas display to 100% width
+    canvasElement.style.height = "100%";
+
+    canvasElement.width = video.videoWidth;  // Actual drawing area width based on video
+    canvasElement.height = video.videoHeight; // Actual drawing area height based on video
+
+
+
     // Now let's start detecting the stream.
     if (runningMode === "IMAGE") {
         runningMode = "VIDEO";
