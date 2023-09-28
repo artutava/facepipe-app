@@ -1,22 +1,27 @@
-const INTERVALO = 2000; //em milisegundos
-
+const INTERVALO = 1000; //em milisegundos
+let currentFolder = null;
 setInterval(() => {
-  addFolders(getFolders());
-  addFiles(getFiles());
+  if(!currentFolder) setCurrentFolder('Scene 1')
+  else addFolders(getFolders());
+  addFiles(getFiles(currentFolder));
 }, INTERVALO);
 
-function createFolder() {
-
-}
+function createFolder() {}
 function getFolders() {
-  return window.electron.sendSync("get-folders") || [];
+  return window.electron.sendSync("get-folders", currentFolder) || [];
 }
 function getFiles() {
-    return window.electron.sendSync("get-csv-files") || [];
+  return window.electron.sendSync("get-csv-files") || [];
 }
 
 function createFolder() {
-    return window.electron.sendSync("create-folder");
+  return window.electron.sendSync("create-folder");
+}
+
+function setCurrentFolder(folder) {
+  currentFolder = folder;
+  window.electron.sendSync("set-current-folder", folder);
+  addFolders(getFolders());
 }
 
 function addFiles(csvFiles) {
@@ -74,6 +79,11 @@ function addFolders(folders) {
   folders.forEach((folder) => {
     const isChecked = checkeds.includes(folder);
     const listItem = document.createElement("tr");
+    if(currentFolder === folder)
+      listItem.classList.add("tr-selected");
+    
+    listItem.classList.add("tr-folder");
+    listItem.onclick = () => setCurrentFolder(folder);
     listItem.dataset.foldername = folder;
     listItem.innerHTML = `
         <td class="icon-td">

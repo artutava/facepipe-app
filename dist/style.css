@@ -197,3 +197,8 @@ td.icon-td {
   border: 0px;
   padding-bottom: 15px;
 }
+
+#folders-list tr {
+  cursor: pointer;
+}
+

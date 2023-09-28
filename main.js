@@ -16,11 +16,10 @@ const createWindow = () => {
 
   win.loadFile("dist/index.html");
   win.webContents.openDevTools();
-  win.webContents.session.on('will-download', (_event, item, _webContents) => {
-
-    const downloadPath = getDocumentsFolder();
-
-    item.setSavePath(downloadPath + '/' + item.getFilename());
+  win.webContents.session.on("will-download", (_event, item, _webContents) => {
+    console.log("Current folder ", global.currentFolder);
+    let downloadPath = getCurrentSceneFolder();
+    item.setSavePath(downloadPath + "/" + item.getFilename());
 
     item.resume();
   });
@@ -39,7 +38,7 @@ app.on("window-all-closed", () => {
 });
 
 ipcMain.on("get-csv-files", (event, dirPath) => {
-  const folderPath = getDocumentsFolder();
+  let folderPath = getCurrentSceneFolder();
 
   fs.readdir(folderPath, (err, files) => {
     if (err) {
@@ -71,8 +70,8 @@ ipcMain.on("get-folders", (event, dirPath) => {
         folders.push(file);
       }
     });
-    if(!folders.length) {
-      fs.mkdirSync(path.join(folderPath, "Cena 1"), { recursive: true })
+    if (!folders.length) {
+      fs.mkdirSync(path.join(folderPath, "Scene 1"), { recursive: true });
     }
 
     event.returnValue = folders;
@@ -91,26 +90,41 @@ ipcMain.on("create-folder", (event, dirPath) => {
 
     const folders = [];
     files.forEach((file) => {
-      const itemPath = `${folderPath}/${file}`;
+      const itemPath = path.join(folderPath, file);
       const isDirectory = fs.statSync(itemPath).isDirectory();
 
       if (isDirectory) {
         folders.push(file);
       }
     });
-    fs.mkdirSync(path.join(folderPath, `Cena ${files.length + 1}`), { recursive: true })
+    fs.mkdirSync(path.join(folderPath, `Scene ${files.length + 1}`), {
+      recursive: true,
+    });
 
     event.returnValue = folders;
   });
 });
 
+ipcMain.on("set-current-folder", (event, folder) => {
+  global.currentFolder = folder;
+  event.returnValue = folder;
+});
 
 function getDocumentsFolder() {
   const documentsPath = app.getPath("documents");
-  const folderPath = path.join(documentsPath, "facepipe");
+  let folderPath = path.join(documentsPath, "facepipe");
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, { recursive: true });
   }
- 
+
+  return folderPath;
+}
+
+function getCurrentSceneFolder() {
+  const documentsFolder = getDocumentsFolder();
+  const folderPath = path.join(documentsFolder, global.currentFolder);
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
   return folderPath;
 }
