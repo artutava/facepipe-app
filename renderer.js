@@ -65,7 +65,7 @@ function addFiles(csvFiles) {
     const isChecked = checkeds.includes(file);
     const listItem = document.createElement("tr");
     const dateFile = new Date(window.electron.sendSync("get-date-file", file));
-    const dateString = dateFile.toLocaleDateString('en-US') + " " + `${dateFile.getHours()}:${dateFile.getMinutes()}:${dateFile.getSeconds()}`;
+    const dateString = dateFile.toLocaleDateString('en-US') + " " + `${dateFile.getHours()}:${dateFile.getMinutes()}`;
     listItem.dataset.filename = file;
     listItem.innerHTML = `
         <td>
