@@ -69,7 +69,7 @@ function addFiles(csvFiles) {
     const dateString = dateFile.toLocaleDateString('en-US') + " " + `${formatHour(dateFile)}`;
     listItem.dataset.filename = file;
     listItem.innerHTML = `
-        <td>
+        <td class="icon-td">
             <div class="form-check">
                 <label class="form-check-label">
                     <input class="form-check-input file-checkbox" value="${file}"  type="checkbox">
@@ -79,8 +79,11 @@ function addFiles(csvFiles) {
                 </label>
             </div>
         </td>
+        <td class="icon-td">
+        <i class="fa-solid fa-file"></i>
+        </td>
         <td>
-            <p class="title"> <i class="fa-solid fa-file"></i>${file}</p>
+            <p class="title">${file}</p>
             <p class="text-muted">${dateString}</p> 
             <!-- You might want to adjust this hardcoded date -->
         </td>
@@ -114,13 +117,7 @@ function addFolders(folders) {
     listItem.classList.add("tr-folder");
     listItem.dataset.foldername = folder;
     listItem.innerHTML = `
-        <td class="icon-td" onclick="setCurrentFolder('${folder}')">
-            <i class="fa-solid fa-folder"></i>
-        </td>
-        <td onclick="setCurrentFolder('${folder}')">
-            <p class="title">${folder}</p>            
-        </td>
-        <td class="td-actions text-right">
+    <td class="icon-td">
             <div class="form-check">
                 <label class="form-check-label">
                     <input class="form-check-input folder-checkbox" value="${folder}" type="checkbox">
@@ -130,6 +127,18 @@ function addFolders(folders) {
                 </label>
             </div>
         </td>
+        <td class="icon-td" onclick="setCurrentFolder('${folder}')">
+            <i class="fa-solid fa-folder"></i>
+        </td>
+        <td onclick="setCurrentFolder('${folder}')">
+            <p class="title">${folder}</p>            
+        </td>
+        <td class="td-actions text-right">
+            <button type="button" rel="tooltip" title="" class="btn btn-link" data-original-title="Edit Task">
+                <i class="tim-icons icon-pencil"></i>
+            </button>
+        </td>
+        
       `;
     if (isChecked)
       listItem.querySelector(

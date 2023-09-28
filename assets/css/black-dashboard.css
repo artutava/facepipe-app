@@ -14710,7 +14710,7 @@ table.tablesorter thead tr .headerSortDown {
   .main-panel[data="primary"] {
     border-top: 2px solid #e14eca; }
   .main-panel > .content {
-    padding: 80px 30px 30px 280px;
+    padding: 0px;
     min-height: calc(100vh - 70px); }
   .main-panel > .navbar {
     margin-bottom: 0; }
@@ -14825,7 +14825,7 @@ table.tablesorter thead tr .headerSortDown {
   .main-panel {
     width: 100%; }
     .main-panel .content {
-      padding-left: 30px; } }
+      padding-left: 0px; } }
 
 @media (min-width: 992px) {
   .sidebar,
@@ -14975,7 +14975,7 @@ table.tablesorter thead tr .headerSortDown {
     background-color: transparent;
     transition: all 0.5s cubic-bezier(0.685, 0.0473, 0.346, 1); }
   .main-panel .content {
-    padding-left: 30px !important; }
+    padding-left: 0px !important; }
   .sidebar-mini .sidebar .logo a.logo-normal {
     opacity: 1;
     -webkit-transform: translate3d(0px, 0, 0);
