@@ -51,6 +51,7 @@ function deleteItems() {
 
 }
 
+
 function addFiles(csvFiles) {
   const fileListElement = document.getElementById("filelist");
   const checkeds = [];
@@ -65,7 +66,7 @@ function addFiles(csvFiles) {
     const isChecked = checkeds.includes(file);
     const listItem = document.createElement("tr");
     const dateFile = new Date(window.electron.sendSync("get-date-file", file));
-    const dateString = dateFile.toLocaleDateString('en-US') + " " + `${dateFile.getHours()}:${dateFile.getMinutes()}`;
+    const dateString = dateFile.toLocaleDateString('en-US') + " " + `${formatHour(dateFile)}`;
     listItem.dataset.filename = file;
     listItem.innerHTML = `
         <td>
@@ -136,4 +137,17 @@ function addFolders(folders) {
       ).checked = true;
     folderListElement.appendChild(listItem);
   });
+}
+
+
+function formatHour(date) {
+  let hours = date.getHours();
+  let minutes = date.getMinutes();
+
+  let interval = hours >= 12 ? 'PM' : 'AM';
+
+  if (hours > 12) hours -= 12;
+  if (minutes < 10) minutes = '0' + minutes;
+  const hourFormated = hours + ':' + minutes + ' ' + interval;
+  return hourFormated;
 }
