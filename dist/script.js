@@ -50,26 +50,29 @@ createFaceLandmarker();
 // Demo 2: Continuously grab image from webcam stream and detect it.
 ********************************************************************/
 let video = document.getElementById("webcam");
-const canvasElement = document.getElementById("output_canvas");
-const canvasCtx = canvasElement.getContext("2d");
+let canvasElement = document.getElementById("output_canvas");
+let canvasCtx = canvasElement.getContext("2d");
 // Check if webcam access is supported.
 function hasGetUserMedia() {
   return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 }
 
 async function setWebCam(deviceId) {
-//   video.remove();
+  video.remove();
 
-//   const prewebcam = document.querySelector(".prewebcam");
-//   prewebcam.innerHTML = `        
-//         <video id="webcam" autoplay playsinline></video>
-//         <canvas
-//           class="output_canvas"
-//           id="output_canvas"
-//           style="position: absolute; left: 0px; top: 0px"
-//         ></canvas>
-//     `;
-//   video = document.getElementById("webcam");
+  const prewebcam = document.querySelector(".prewebcam");
+  prewebcam.innerHTML = `        
+        <video id="webcam" autoplay playsinline></video>
+        <canvas
+          class="output_canvas"
+          id="output_canvas"
+          style="position: absolute; left: 0px; top: 0px"
+        ></canvas>
+    `;
+  video = document.getElementById("webcam");
+  canvasElement = document.getElementById("output_canvas");
+  canvasCtx = canvasElement.getContext("2d");
+  drawingUtils = new DrawingUtils(canvasCtx);
   setTimeout(() => {
     enableCam(null, deviceId)
   }, 2000);
