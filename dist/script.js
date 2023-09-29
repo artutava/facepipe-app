@@ -165,11 +165,7 @@ function drawBlendShapes(el, blendShapes) {
         recordedData.push(blendShapes[0].categories);
     }
 
-    let htmlMaker = `
-        <button id="recordButton" onclick="toggleRecording()">
-            ${isRecording ? ' Stop Recording' : 'Start Recording'}
-        </button>
-    `;
+    let htmlMaker = '';
 
     blendShapes[0].categories.map((shape) => {
         htmlMaker += 
