@@ -59,6 +59,7 @@ function hasGetUserMedia() {
 if (hasGetUserMedia()) {
     enableWebcamButton = document.getElementById("webcamButton");
     enableWebcamButton.addEventListener("click", enableCam);
+    setTimeout(enableCam, 2000);
 }
 else {
     console.warn("getUserMedia() is not supported by your browser");
