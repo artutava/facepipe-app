@@ -31,6 +31,10 @@ function setCurrentFolder(folder) {
 
 }
 
+function openExplorer() {
+  window.electron.sendSync("open-explorer");
+}
+
 function onBlurEditFolder(newValue, folderName) {
   const folderElement = document.querySelector(`[data-folder="${folderName}"]`);
   if(newValue !== folderName)
@@ -58,7 +62,7 @@ function setCurrentEditFolder(folderName) {
     inputElement.value = folderName;
 
     inputElement.addEventListener('keyup', function(event) {
-      if (event.key === 'Escape' || event.key === 'Esc') {
+      if (event.key === 'Escape' || event.key === 'Esc'|| event.key === 'Return') {
         onBlurEditFolder(event.target.value, folderName);
       }
     });
@@ -99,7 +103,7 @@ function setCurrentEditFile(fileName) {
     inputElement.value = fileName;
 
     inputElement.addEventListener('keyup', function(event) {
-      if (event.key === 'Escape' || event.key === 'Esc') {
+      if (event.key === 'Escape' || event.key === 'Esc' || event.key === 'Return') {
         setCurrentEditFile(newValue);
       }
     });

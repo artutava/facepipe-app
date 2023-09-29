@@ -111,6 +111,24 @@ ipcMain.on("create-folder", (event, dirPath) => {
   });
 });
 
+ipcMain.on("open-explorer", (event, dirPath) => {
+    let cmd = ``;
+    switch (require(`os`).platform().toLowerCase().replace(/[0-9]/g, ``).replace(`darwin`, `macos`)) {
+        case `win`:
+            cmd = `explorer`;
+            break;
+        case `linux`:
+            cmd = `xdg-open`;
+            break;
+        case `macos`:
+            cmd = `open`;
+            break;
+    }
+    let p = require(`child_process`).spawn(cmd, [getDocumentsFolder()]);
+    event.returnValue = true;
+    
+});
+
 ipcMain.on("set-current-folder", (event, folder) => {
   global.currentFolder = folder;
   event.returnValue = folder;
