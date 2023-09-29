@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-
+const fsExtra  = require("fs-extra")
 const path = require("node:path");
 const fs = require("fs");
 
@@ -130,6 +130,28 @@ ipcMain.on("delete-files", (event, files) => {
   files.forEach(file => {
     fs.rmSync(path.join(sceneFolder, file), { recursive: true, force: true });
   })
+  event.returnValue = true;
+});
+
+ipcMain.on("rename-folder", (event, newName, oldName) => {
+  const documentsFolder = getDocumentsFolder();
+  const oldPath = path.join(documentsFolder, oldName);
+  const newPath = path.join(documentsFolder, newName);
+  try {
+    fsExtra.moveSync(oldPath, newPath, { overwrite: true });
+  } catch (err) {
+  }
+  event.returnValue = true;
+});
+
+ipcMain.on("rename-file", (event, newName, oldName) => {
+  const sceneFolder = getCurrentSceneFolder();
+  const oldPath = path.join(sceneFolder, oldName);
+  const newPath = path.join(sceneFolder, newName);
+  try {
+    fsExtra.moveSync(oldPath, newPath, { overwrite: true });
+  } catch (err) {
+  }
   event.returnValue = true;
 });
 

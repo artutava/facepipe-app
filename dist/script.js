@@ -172,7 +172,8 @@ function drawBlendShapes(el, blendShapes) {
     `;
 
     blendShapes[0].categories.map((shape) => {
-        htmlMaker += `
+        htmlMaker += 
+        `
         <tr>
             <td>${shape.displayName || shape.categoryName}</td>
             <td class="text-center">
