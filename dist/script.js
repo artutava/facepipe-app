@@ -42,7 +42,7 @@ async function createFaceLandmarker() {
     runningMode,
     numFaces: 1,
   });
-  demosSection.classList.remove("invisible");
+  demosSection?.classList.remove("invisible");
 }
 createFaceLandmarker();
 
@@ -58,24 +58,24 @@ function hasGetUserMedia() {
 }
 
 async function setWebCam(deviceId) {
-  video.remove();
+//   video.remove();
 
-  const prewebcam = document.querySelector(".prewebcam");
-  prewebcam.innerHTML = `        
-        <video id="webcam" autoplay playsinline></video>
-        <canvas
-          class="output_canvas"
-          id="output_canvas"
-          style="position: absolute; left: 0px; top: 0px"
-        ></canvas>
-    `;
-  video = document.getElementById("webcam");
-  await navigator.mediaDevices
-    .getUserMedia({ video: { deviceId } })
-    .then((stream) => {
-      video.srcObject = stream;
-      video.addEventListener("loadeddata", predictWebcam);
-    });
+//   const prewebcam = document.querySelector(".prewebcam");
+//   prewebcam.innerHTML = `        
+//         <video id="webcam" autoplay playsinline></video>
+//         <canvas
+//           class="output_canvas"
+//           id="output_canvas"
+//           style="position: absolute; left: 0px; top: 0px"
+//         ></canvas>
+//     `;
+//   video = document.getElementById("webcam");
+  setTimeout(() => {
+    enableCam(null, deviceId)
+  }, 2000);
+//   setTimeout(() => {
+//     enableCam(null, deviceId)
+//   }, 4000);
 }
 // If webcam supported, add event listener to button for when user
 // wants to activate it.
@@ -102,12 +102,12 @@ if (hasGetUserMedia()) {
   console.warn("getUserMedia() is not supported by your browser");
 }
 // Enable the live webcam view and start detection.
-function enableCam(event) {
+function enableCam(event, deviceId) {
   if (!faceLandmarker) {
     console.log("Wait! faceLandmarker not loaded yet.");
     return;
   }
-  if (webcamRunning === true) {
+  if (webcamRunning === true && !deviceId) {
     webcamRunning = false;
     enableWebcamButton.innerHTML =
       '<i class="fa-solid fa-play"></i> Enable Webcam';
@@ -120,6 +120,9 @@ function enableCam(event) {
   const constraints = {
     video: true,
   };
+  if (deviceId) {
+    constraints.video = { deviceId };
+  }
   // Activate the webcam stream.
   navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
     video.srcObject = stream;
@@ -128,7 +131,7 @@ function enableCam(event) {
 }
 let lastVideoTime = -1;
 let results = undefined;
-const drawingUtils = new DrawingUtils(canvasCtx);
+let drawingUtils = new DrawingUtils(canvasCtx);
 async function predictWebcam() {
   frameCount++;
 
