@@ -113,11 +113,11 @@ function enableCam(event, deviceId) {
   if (webcamRunning === true && !deviceId) {
     webcamRunning = false;
     enableWebcamButton.innerHTML =
-      '<i class="fa-solid fa-play"></i> Enable Webcam';
+      '<i class="fa-regular fa-circle"></i> Tracking';
   } else {
     webcamRunning = true;
     enableWebcamButton.innerHTML =
-      '<i class="fa-solid fa-pause"></i> Disable Webcam';
+      '<i class="fa-regular fa-circle-check"></i> Tracking';
   }
   // getUsermedia parameters.
   const constraints = {

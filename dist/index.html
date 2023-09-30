@@ -69,12 +69,7 @@
                     class="videoView d-flex algin-items-center"
                   >
                     <div class="xx text-center">
-                      <button id="webcamButton" class="btn btn-success">
-                        <i class="tim-icons icon-check-2"> </i> Enable Webcam
-                      </button>
-                      <button class="btn btn-primary" id="recordButton">
-                        <i class="fa-solid fa-circle"></i> Start Recording
-                      </button>
+                      
 
                       <div class="prewebcam" style="position: relative">
                         <video id="webcam" autoplay playsinline></video>
@@ -86,6 +81,13 @@
                       </div>
                       <div class="form-group">
                         <select class="form-control" id="select-webcam"></select>
+                      </div>
+                      
+                      <button class="btn btn-primary" id="recordButton">
+                        <i class="fa-solid fa-circle"></i> Start Recording
+                      </button>
+                      <div id="webcamButton" class="tracking-status">
+                        <i class="fa-regular fa-circle"></i> Tracking
                       </div>
                     </div>
                   </div>
@@ -146,7 +148,7 @@
                       class="btn btn-link dropdown-toggle btn-icon"
                       onclick="openExplorer()"
                     >
-                      <i class="fa-solid fa-pen-to-square"></i>
+                    <i class="fa-regular fa-folder-open"></i>
                     </button>
                   </div>
                 </div>

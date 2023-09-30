@@ -160,14 +160,11 @@ footer {
 }
 
 #webcamButton {
-  position: absolute;
+  position: relative;
   z-index: 99;
-  right: 0px;
-  left: 0px;
   margin-left: auto;
   margin-right: auto;
-  width: 50%;
-  bottom: -60px;
+  color: #fff;
 }
 
 #select-webcam {
