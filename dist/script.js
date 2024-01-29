@@ -319,10 +319,13 @@ function toggleRecording() {
 
   const recordButton = document.getElementById("recordButton");
   if (isRecording) {
-    recordButton.innerHTML = "Stop Recording";
+    recordButton.innerHTML = '<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Stop Recording';
+    recordButton.className = 'btn btn-success';
+    
     recordedData = []; // Reset the recorded data
   } else {
-    recordButton.innerHTML = "Start Recording";
+    recordButton.innerHTML = '<i class="fa-solid fa-circle"></i> Start Recording';
+    recordButton.className = 'btn btn-primary';
     downloadCSV(recordedData); // Download the recorded data as CSV
   }
 }

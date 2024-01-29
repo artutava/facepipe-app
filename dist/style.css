@@ -230,3 +230,7 @@ td.icon-td {
   background: #424242;
 }
 
+.spinner-grow {
+  display: inline-flex !important;
+}
+
