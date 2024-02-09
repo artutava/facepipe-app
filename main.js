@@ -15,7 +15,7 @@ const createWindow = () => {
   });
 
   win.loadFile("dist/index.html");
-  win.webContents.openDevTools();
+  //win.webContents.openDevTools(); //Enable or disable (by commenting) Developer Tools (Inspector)
   win.webContents.session.on("will-download", (_event, item, _webContents) => {
     console.log("Current folder ", global.currentFolder);
     let downloadPath = getCurrentSceneFolder();
