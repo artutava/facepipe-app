@@ -242,7 +242,13 @@ function drawBlendShapes(el, blendShapes) {
 
   // Record the data if in recording mode
   if (isRecording) {
-    recordedData.push(blendShapes[0].categories);
+    recordedData.push([...blendShapes[0].categories,
+      {
+        "index": blendShapes[0].categories.length,
+        "score": fps,
+        "categoryName": "fps",
+        "displayName": "fps"
+    }]);
   }
 
   let htmlMaker = "";
@@ -273,24 +279,24 @@ function convertToCSV(objArray) {
   const array = typeof objArray !== "object" ? JSON.parse(objArray) : objArray;
 
   // Check if there's enough data
-  if (array.length % 52 !== 0) {
+  if (array.length % 53 !== 0) {
     console.error(
-      "Data doesn't appear to be a multiple of 52. Can't segment properly."
+      "Data doesn't appear to be a multiple of 53. Can't segment properly."
     );
     return "";
   }
 
-  // Create header using the blendshape names from the first 52 blend shapes
+  // Create header using the blendshape names from the first 53 blend shapes
   let header = array
-    .slice(0, 52)
+    .slice(0, 53)
     .map((item) => item.displayName || item.categoryName)
     .join(",");
   let str = header + "\n";
 
-  // Segment by each 52 shape keys
-  for (let i = 0; i < array.length; i += 52) {
+  // Segment by each 53 shape keys
+  for (let i = 0; i < array.length; i += 53) {
     let segment = array
-      .slice(i, i + 52)
+      .slice(i, i + 53)
       .map((item) => item.score.toFixed(4))
       .join(",");
     str += segment + "\n";
