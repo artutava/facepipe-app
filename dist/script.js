@@ -297,7 +297,7 @@ function convertToCSV(objArray) {
   for (let i = 0; i < array.length; i += 53) {
     let segment = array
       .slice(i, i + 53)
-      .map((item) => item.score.toFixed(4))
+      .map((item) =>  item.score.toFixed(['fps'].includes(item.displayName) ? 0 : 4)  )
       .join(",");
     str += segment + "\n";
   }
