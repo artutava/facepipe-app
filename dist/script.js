@@ -312,8 +312,11 @@ function downloadCSV(data) {
     let link = document.createElement("a");
     let url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    const dateIso = new Date().toISOString();
-    link.setAttribute("download", `${dateIso}.csv`);
+
+    // 🚨 Aqui pegamos o nome via Electron
+    const fileName = window.electron.sendSync("generate-take-filename");
+
+    link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

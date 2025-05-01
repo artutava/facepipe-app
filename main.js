@@ -194,3 +194,25 @@ function getCurrentSceneFolder() {
   }
   return folderPath;
 }
+
+ipcMain.on("generate-take-filename", (event) => {
+  const folderPath = getCurrentSceneFolder();
+  const baseName = global.currentFolder || "Scene";
+  const files = fs.readdirSync(folderPath);
+
+  const existingTakes = files
+    .filter(file => file.endsWith(".csv"))
+    .map(file => {
+      const match = file.match(new RegExp(`^${baseName} Take (\\d+)\\.csv$`));
+      return match ? parseInt(match[1], 10) : null;
+    })
+    .filter(n => n !== null);
+
+  let nextTake = 1;
+  while (existingTakes.includes(nextTake)) {
+    nextTake++;
+  }
+
+  const newFileName = `${baseName} Take ${nextTake}.csv`;
+  event.returnValue = newFileName;
+});
