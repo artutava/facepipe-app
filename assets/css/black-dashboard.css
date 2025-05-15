@@ -22715,3 +22715,19 @@ Copyright (c) 2015 Daniel Eden
     text-align: center; } }
 
 /*# sourceMappingURL=black-dashboard.css.map */
+.wrapper{
+    height: 100% !important;
+}
+
+
+.table-new-size {
+  max-height:55vh !important;
+  transition: max-height 0.6s ease-in-out;
+}
+
+@media (max-width: 1400px) {
+  .table-new-size {
+    max-height: 40vh !important;
+    transition: max-height 0.6s ease-in-out;
+  }
+}
