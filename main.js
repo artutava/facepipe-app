@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const fsExtra  = require("fs-extra")
+const fsExtra  = require("fs-extra");
 const path = require("node:path");
 const fs = require("fs");
 
@@ -16,19 +16,16 @@ const createWindow = () => {
   });
 
   win.loadFile("dist/index.html");
-  //win.webContents.openDevTools(); //Enable or disable (by commenting) Developer Tools (Inspector)
-  win.webContents.session.on("will-download", (_event, item, _webContents) => {
-    console.log("Current folder ", global.currentFolder);
-    let downloadPath = getCurrentSceneFolder();
-    item.setSavePath(downloadPath + "/" + item.getFilename());
 
+  win.webContents.session.on("will-download", (_event, item, _webContents) => {
+    const downloadPath = getCurrentSceneFolder();
+    item.setSavePath(downloadPath + "/" + item.getFilename());
     item.resume();
   });
 };
 
 app.whenReady().then(() => {
   createWindow();
-
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -38,9 +35,34 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 
-ipcMain.on("get-csv-files", (event, dirPath) => {
-  let folderPath = getCurrentSceneFolder();
+function getDocumentsFolder() {
+  const documentsPath = app.getPath("documents");
+  const folderPath = path.join(documentsPath, "facepipe");
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+  return folderPath;
+}
 
+function getRecordingFolder() {
+  const base = getDocumentsFolder();
+  const recPath = path.join(base, "recordings");
+  if (!fs.existsSync(recPath)) {
+    fs.mkdirSync(recPath, { recursive: true });
+  }
+  return recPath;
+}
+
+function getCurrentSceneFolder() {
+  const folderPath = path.join(getRecordingFolder(), global.currentFolder || "Scene 1");
+  if (!fs.existsSync(folderPath)) {
+    fs.mkdirSync(folderPath, { recursive: true });
+  }
+  return folderPath;
+}
+
+ipcMain.on("get-csv-files", (event) => {
+  const folderPath = getCurrentSceneFolder();
   fs.readdir(folderPath, (err, files) => {
     if (err) {
       console.error("Error reading directory:", err);
@@ -52,29 +74,20 @@ ipcMain.on("get-csv-files", (event, dirPath) => {
   });
 });
 
-ipcMain.on("get-folders", (event, dirPath) => {
-  const folderPath = getDocumentsFolder();
-
+ipcMain.on("get-folders", (event) => {
+  const folderPath = getRecordingFolder();
   fs.readdir(folderPath, (err, files) => {
     if (err) {
       console.error("Erro ao ler o diretório:", err);
       event.returnValue = [];
       return;
     }
-
-    const folders = [];
-    files.forEach((file) => {
-      const itemPath = `${folderPath}/${file}`;
-      const isDirectory = fs.statSync(itemPath).isDirectory();
-
-      if (isDirectory) {
-        folders.push(file);
-      }
-    });
-    if (!folders.length) {
+    const folders = files.filter(file =>
+      fs.statSync(path.join(folderPath, file)).isDirectory()
+    );
+    if (!folders.includes("Scene 1")) {
       fs.mkdirSync(path.join(folderPath, "Scene 1"), { recursive: true });
     }
-
     event.returnValue = folders;
   });
 });
@@ -85,49 +98,21 @@ ipcMain.on("get-date-file", (event, fileName) => {
   event.returnValue = fileStat?.mtime;
 });
 
-ipcMain.on("create-folder", (event, dirPath) => {
-  const folderPath = getDocumentsFolder();
-
-  fs.readdir(folderPath, (err, files) => {
-    if (err) {
-      console.error("Erro ao ler o diretório:", err);
-      event.returnValue = [];
-      return;
-    }
-
-    const folders = [];
-    files.forEach((file) => {
-      const itemPath = path.join(folderPath, file);
-      const isDirectory = fs.statSync(itemPath).isDirectory();
-
-      if (isDirectory) {
-        folders.push(file);
-      }
-    });
-    fs.mkdirSync(path.join(folderPath, `Scene ${files.length + 1}`), {
-      recursive: true,
-    });
-
-    event.returnValue = folders;
-  });
+ipcMain.on("create-folder", (event) => {
+  const folderPath = getRecordingFolder();
+  const files = fs.readdirSync(folderPath);
+  const count = files.length + 1;
+  fs.mkdirSync(path.join(folderPath, `Scene ${count}`), { recursive: true });
+  event.returnValue = fs.readdirSync(folderPath);
 });
 
-ipcMain.on("open-explorer", (event, dirPath) => {
-    let cmd = ``;
-    switch (require(`os`).platform().toLowerCase().replace(/[0-9]/g, ``).replace(`darwin`, `macos`)) {
-        case `win`:
-            cmd = `explorer`;
-            break;
-        case `linux`:
-            cmd = `xdg-open`;
-            break;
-        case `macos`:
-            cmd = `open`;
-            break;
-    }
-    let p = require(`child_process`).spawn(cmd, [getDocumentsFolder()]);
-    event.returnValue = true;
-    
+ipcMain.on("open-explorer", (event) => {
+  const os = require("os").platform();
+  const cmd = os.startsWith("win") ? "explorer"
+            : os === "darwin" ? "open"
+            : "xdg-open";
+  require("child_process").spawn(cmd, [getDocumentsFolder()]);
+  event.returnValue = true;
 });
 
 ipcMain.on("set-current-folder", (event, folder) => {
@@ -136,30 +121,28 @@ ipcMain.on("set-current-folder", (event, folder) => {
 });
 
 ipcMain.on("delete-folders", (event, folders) => {
-  const documentsPath = getDocumentsFolder();
+  const basePath = getRecordingFolder();
   folders.forEach(folder => {
-    fs.rmSync(path.join(documentsPath, folder), { recursive: true, force: true });
-  })
-  event.returnValue = true; 
-
+    fs.rmSync(path.join(basePath, folder), { recursive: true, force: true });
+  });
+  event.returnValue = true;
 });
 
 ipcMain.on("delete-files", (event, files) => {
-  const sceneFolder = getCurrentSceneFolder();
+  const folder = getCurrentSceneFolder();
   files.forEach(file => {
-    fs.rmSync(path.join(sceneFolder, file), { recursive: true, force: true });
-  })
+    fs.rmSync(path.join(folder, file), { force: true });
+  });
   event.returnValue = true;
 });
 
 ipcMain.on("rename-folder", (event, newName, oldName) => {
-  const documentsFolder = getDocumentsFolder();
-  const oldPath = path.join(documentsFolder, oldName);
-  const newPath = path.join(documentsFolder, newName);
+  const folderBase = getRecordingFolder();
+  const oldPath = path.join(folderBase, oldName);
+  const newPath = path.join(folderBase, newName);
   try {
     fsExtra.moveSync(oldPath, newPath, { overwrite: true });
-  } catch (err) {
-  }
+  } catch {}
   event.returnValue = true;
 });
 
@@ -169,31 +152,9 @@ ipcMain.on("rename-file", (event, newName, oldName) => {
   const newPath = path.join(sceneFolder, newName);
   try {
     fsExtra.moveSync(oldPath, newPath, { overwrite: true });
-  } catch (err) {
-  }
+  } catch {}
   event.returnValue = true;
 });
-
-
-
-function getDocumentsFolder() {
-  const documentsPath = app.getPath("documents");
-  let folderPath = path.join(documentsPath, "facepipe");
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-  }
-
-  return folderPath;
-}
-
-function getCurrentSceneFolder() {
-  const documentsFolder = getDocumentsFolder();
-  const folderPath = path.join(documentsFolder, global.currentFolder);
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-  }
-  return folderPath;
-}
 
 ipcMain.on("generate-take-filename", (event) => {
   const folderPath = getCurrentSceneFolder();
@@ -215,4 +176,22 @@ ipcMain.on("generate-take-filename", (event) => {
 
   const newFileName = `${baseName} Take ${nextTake}.csv`;
   event.returnValue = newFileName;
+});
+
+
+ipcMain.on("get-recording-path", (event) => {
+  event.returnValue = getRecordingFolder();
+});
+
+
+ipcMain.on("read-csv-content", (event, fileName) => {
+  const sceneFolder = getCurrentSceneFolder();
+  const filePath = path.join(sceneFolder, fileName);
+  try {
+    const content = fs.readFileSync(filePath, "utf-8");
+    event.returnValue = content;
+  } catch (err) {
+    console.error("Failed to read CSV:", err);
+    event.returnValue = null;
+  }
 });

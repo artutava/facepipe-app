@@ -52,6 +52,19 @@
     <!-- CSS Just for demo purpose, don't include it in your project -->
     <link href="../assets/demo/demo.css" rel="stylesheet" />
     <link rel="stylesheet" href="./style.css" />
+
+<!-- Three.js Core -->
+
+<script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+
   </head>
 
   <body class="sidebar-mini">
@@ -349,6 +362,210 @@
     </script>
 
     <script type="module" src="script.js"></script>
+
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+let scene, camera, renderer, model, morphTargetDict, morphTargetInfluences;
+let previewData = [], currentFrame = 0, isPlaying = false, animationId = null;
+let blendshapeHeader = [];
+
+const CSV_TO_MORPH_MAP = {
+  browDownLeft: "browDown_L",
+  browDownRight: "browDown_R",
+  browInnerUp: "browInnerUp",
+  browOuterUpLeft: "browOuterUp_L",
+  browOuterUpRight: "browOuterUp_R",
+  cheekPuff: "cheekPuff",
+  cheekSquintLeft: "cheekSquint_L",
+  cheekSquintRight: "cheekSquint_R",
+  eyeBlinkLeft: "eyeBlink_L",
+  eyeBlinkRight: "eyeBlink_R",
+  eyeLookDownLeft: "eyeLookDown_L",
+  eyeLookDownRight: "eyeLookDown_R",
+  eyeLookInLeft: "eyeLookIn_L",
+  eyeLookInRight: "eyeLookIn_R",
+  eyeLookOutLeft: "eyeLookOut_L",
+  eyeLookOutRight: "eyeLookOut_R",
+  eyeLookUpLeft: "eyeLookUp_L",
+  eyeLookUpRight: "eyeLookUp_R",
+  eyeSquintLeft: "eyeSquint_L",
+  eyeSquintRight: "eyeSquint_R",
+  eyeWideLeft: "eyeWide_L",
+  eyeWideRight: "eyeWide_R",
+  jawForward: "jawForward",
+  jawLeft: "jawLeft",
+  jawRight: "jawRight",
+  jawOpen: "jawOpen",
+  mouthClose: "mouthClose",
+  mouthDimpleLeft: "mouthDimple_L",
+  mouthDimpleRight: "mouthDimple_R",
+  mouthFrownLeft: "mouthFrown_L",
+  mouthFrownRight: "mouthFrown_R",
+  mouthFunnel: "mouthFunnel",
+  mouthLeft: "mouthLeft",
+  mouthRight: "mouthRight",
+  mouthLowerDownLeft: "mouthLowerDown_L",
+  mouthLowerDownRight: "mouthLowerDown_R",
+  mouthPressLeft: "mouthPress_L",
+  mouthPressRight: "mouthPress_R",
+  mouthPucker: "mouthPucker",
+  mouthRollLower: "mouthRollLower",
+  mouthRollUpper: "mouthRollUpper",
+  mouthShrugLower: "mouthShrugLower",
+  mouthShrugUpper: "mouthShrugUpper",
+  mouthSmileLeft: "mouthSmile_L",
+  mouthSmileRight: "mouthSmile_R",
+  mouthStretchLeft: "mouthStretch_L",
+  mouthStretchRight: "mouthStretch_R",
+  mouthUpperUpLeft: "mouthUpperUp_L",
+  mouthUpperUpRight: "mouthUpperUp_R",
+  noseSneerLeft: "noseSneer_L",
+  noseSneerRight: "noseSneer_R"
+};
+
+window.previewCSV = async function(fileName) {
+  const csv = window.electron.sendSync("read-csv-content", fileName);
+  if (!csv) return alert("Could not load CSV file.");
+
+  const [headerLine, ...lines] = csv.trim().split("\n");
+  blendshapeHeader = headerLine.split(",");
+
+  previewData = lines.map(line => line.split(",").map(Number));
+  currentFrame = 0;
+
+  if (!scene) await setupThreeScene();
+  document.getElementById("csv-frame-info").innerText = `Frame: ${currentFrame + 1}`;
+  $('#previewModal').modal("show");
+  renderFrame();
+};
+
+async function setupThreeScene() {
+  const canvas = document.getElementById("three-canvas");
+  const width = canvas.clientWidth || 800;
+  const height = canvas.clientHeight || 600;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x111111);
+
+  camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+  scene.add(light);
+
+  const loader = new GLTFLoader();
+  const gltf = await loader.loadAsync("face_default.gltf");
+  model = gltf.scene;
+
+  // Center the model
+  const box = new THREE.Box3().setFromObject(model);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  model.position.sub(center);
+  scene.add(model);
+
+  // Adjust camera to fit
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI / 180);
+  const distance = maxDim / (2 * Math.tan(fov / 2));
+  camera.position.set(0, 0, distance * 1.5);
+  camera.lookAt(0, 0, 0);
+  camera.updateProjectionMatrix();
+
+  model.traverse(child => {
+    if (child.isMesh && child.morphTargetDictionary) {
+      morphTargetDict = child.morphTargetDictionary;
+      morphTargetInfluences = child.morphTargetInfluences;
+    }
+  });
+}
+
+function renderFrame() {
+  if (!previewData.length) return;
+
+  const blendValues = previewData[currentFrame];
+  const nameToValue = {};
+
+  // Create a mapping from CSV header → value
+  blendshapeHeader.forEach((name, idx) => {
+    if (name === "fps" || name === "_neutral") return; // skip fps and neutral
+    const mappedName = CSV_TO_MORPH_MAP[name] || name;
+    if (!(mappedName in nameToValue)) nameToValue[mappedName] = 0;
+    nameToValue[mappedName] += blendValues[idx] || 0;
+  });
+
+  // Apply values to morph targets
+  for (const [name, index] of Object.entries(morphTargetDict)) {
+    morphTargetInfluences[index] = nameToValue[name] || 0;
+  }
+
+  renderer.render(scene, camera);
+  document.getElementById("csv-frame-info").innerText = `Frame: ${currentFrame + 1}`;
+}
+
+window.playCSV = function () {
+  if (isPlaying) return;
+  isPlaying = true;
+  const frameDuration = 1000 / 30;
+
+  function loop() {
+    if (!isPlaying || currentFrame >= previewData.length) {
+      isPlaying = false;
+      return;
+    }
+    renderFrame();
+    currentFrame++;
+    animationId = setTimeout(() => requestAnimationFrame(loop), frameDuration);
+  }
+
+  loop();
+};
+
+window.pauseCSV = function () {
+  isPlaying = false;
+  clearTimeout(animationId);
+};
+
+window.resetCSV = function () {
+  currentFrame = 0;
+  renderFrame();
+};
+</script>
+
+
+
+    
+
+
     <script src="../renderer.js"></script>
+    <!-- CSV Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">CSV Animation Preview</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-0">
+        <canvas id="three-canvas" style="width: 100%; height: 600px;"></canvas>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <div>
+          <button class="btn btn-primary" onclick="playCSV()">Play</button>
+          <button class="btn btn-secondary" onclick="pauseCSV()">Pause</button>
+          <button class="btn btn-info" onclick="resetCSV()">Replay</button>
+        </div>
+        <span id="csv-frame-info" class="text-muted small">Frame: 0</span>
+      </div>
+    </div>
+  </div>
+</div>
   </body>
 </html>

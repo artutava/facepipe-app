@@ -117,6 +117,9 @@ function setCurrentEditFile(fileName) {
   }
 }
 
+
+
+
 function deleteItems() {
   const checkedFolders = [];
   document
@@ -200,9 +203,12 @@ function addFiles(csvFiles) {
                 <p class="text-muted">${dateString}</p> 
             </td>
             <td class="td-actions text-right">
-                <button type="button" rel="tooltip" title="" class="btn btn-link" data-original-title="Edit Task" onclick="setCurrentEditFile('${file}')">
-                    <i class="tim-icons icon-pencil"></i>
-                </button>
+              <button type="button" class="btn btn-link" title="Preview CSV" onclick="previewCSV('${file}')">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              <button type="button" class="btn btn-link" title="Rename" onclick="setCurrentEditFile('${file}')">
+                <i class="tim-icons icon-pencil"></i>
+              </button>
             </td>
         `;
       if (isChecked)
@@ -291,3 +297,13 @@ function formatHour(date) {
   const hourFormated = hours + ":" + minutes + " " + interval;
   return hourFormated;
 }
+
+
+let previewData = [];
+let currentFrame = 0;
+let isPlaying = false;
+let animationId = null;
+let scene, camera, renderer, clock, model, mixer;
+let morphTargetDict = {};
+let morphTargetInfluences = [];
+
